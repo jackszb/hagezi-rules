@@ -1,0 +1,54 @@
+name: Update sing-box rule-set
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 9 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  update-rule-set:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Install Python dependencies
+      run: |
+        set -euo pipefail
+        python -m pip install --upgrade pip
+        pip install requests==2.31.0
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Setup sing-box
+      run: |
+        set -euo pipefail
+        curl -fsSL https://sing-box.app/install.sh | sh
+
+    - name: Run script 1 - Generate Rule Set
+      run: |
+        set -euo pipefail
+        python3 generate_rule_set.py
+
+    - name: Run script 2 - Automate sing-box rule update
+      run: |
+        set -euo pipefail
+        python3 automation_script.py
+
+    - name: Commit & Push SRS
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+        git add *.srs
+        git commit -m "Auto update SRS (from rules/)" || echo "No changes"
+        git push
