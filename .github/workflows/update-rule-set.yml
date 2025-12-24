@@ -35,20 +35,15 @@ jobs:
         set -euo pipefail
         curl -fsSL https://sing-box.app/install.sh | sh
 
-    - name: Run script 1 - Generate Rule Set
+    - name: Run generate_rule_set.py
       run: |
         set -euo pipefail
-        python3 generate_rule_set.py
+        python3 generate_rule_set.py  # 运行根目录下的 generate_rule_set.py 脚本
 
-    - name: Run script 2 - Automate sing-box rule update
-      run: |
-        set -euo pipefail
-        python3 automation_script.py
-
-    - name: Commit & Push SRS
+    - name: Commit & Push JSON and SRS files
       run: |
         git config --global user.email "github-actions@github.com"
         git config --global user.name "GitHub Actions"
-        git add *.srs
-        git commit -m "Auto update SRS (from rules/)" || echo "No changes"
+        git add *.json *.srs
+        git commit -m "Auto update SRS and JSON files (from rules/)" || echo "No changes"
         git push
