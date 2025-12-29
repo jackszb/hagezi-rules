@@ -27,12 +27,12 @@ jobs:
           set -e
 
           declare -A RULES=(
-            ["light"]="https://github.com/hagezi/dns-blocklists/raw/refs/heads/main/domains/light.txt"
-            ["multi"]="https://github.com/hagezi/dns-blocklists/raw/refs/heads/main/domains/multi.txt"
-            ["pro"]="https://github.com/hagezi/dns-blocklists/raw/refs/heads/main/domains/pro.txt"
-            ["pro.plus"]="https://github.com/hagezi/dns-blocklists/raw/refs/heads/main/domains/pro.plus.txt"
-            ["ultimate"]="https://github.com/hagezi/dns-blocklists/raw/refs/heads/main/domains/ultimate.txt"
-            ["tif"]="https://github.com/hagezi/dns-blocklists/raw/refs/heads/main/domains/tif.txt"
+            ["light"]="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/light.txt"
+            ["multi"]="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/multi.txt"
+            ["pro"]="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/pro.txt"
+            ["pro.plus"]="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/pro.plus.txt"
+            ["ultimate"]="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/ultimate.txt"
+            ["tif"]="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/tif.txt"
           )
 
           for name in "${!RULES[@]}"; do
