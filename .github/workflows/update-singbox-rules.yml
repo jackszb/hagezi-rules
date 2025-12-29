@@ -1,0 +1,74 @@
+name: Update sing-box rules
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install sing-box
+        run: |
+          curl -fsSL https://sing-box.app/install.sh | sh
+          sing-box version
+
+      - name: Prepare rules directory
+        run: |
+          mkdir -p rules
+
+      - name: Generate sing-box rule source files
+        run: |
+          set -e
+
+          declare -A RULES=(
+            ["light"]="https://github.com/hagezi/dns-blocklists/raw/refs/heads/main/domains/light.txt"
+            ["multi"]="https://github.com/hagezi/dns-blocklists/raw/refs/heads/main/domains/multi.txt"
+            ["pro"]="https://github.com/hagezi/dns-blocklists/raw/refs/heads/main/domains/pro.txt"
+            ["pro.plus"]="https://github.com/hagezi/dns-blocklists/raw/refs/heads/main/domains/pro.plus.txt"
+            ["ultimate"]="https://github.com/hagezi/dns-blocklists/raw/refs/heads/main/domains/ultimate.txt"
+            ["tif"]="https://github.com/hagezi/dns-blocklists/raw/refs/heads/main/domains/tif.txt"
+          )
+
+          for name in "${!RULES[@]}"; do
+            tmp="$(mktemp)"
+
+            curl -fsSL "${RULES[$name]}" \
+              | sed 's/\r//' \
+              | sed '/^$/d' \
+              | sort -u > "$tmp"
+
+            jq -Rn '
+              [inputs] |
+              {
+                version: 3,
+                rules: [
+                  {
+                    domain_suffix: .
+                  }
+                ]
+              }
+            ' "$tmp" > "rules/${name}.json"
+
+            rm -f "$tmp"
+          done
+
+      - name: Compile rule-set to .srs
+        run: |
+          for json in rules/*.json; do
+            sing-box rule-set compile "$json"
+          done
+
+      - name: Commit & Push rules
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+          git add rules/
+          git commit -m "Auto update sing-box rules" || echo "No changes"
+          git push
